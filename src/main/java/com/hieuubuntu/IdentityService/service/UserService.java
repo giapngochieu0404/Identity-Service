@@ -10,6 +10,8 @@ import com.hieuubuntu.IdentityService.exception.error_code.ErrorCode;
 import com.hieuubuntu.IdentityService.exception.type.AppException;
 import com.hieuubuntu.IdentityService.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,11 +26,14 @@ public class UserService {
 
         User newUser = new User();
         newUser.setUsername(userCreateRequest.getUsername());
-        newUser.setPassword(userCreateRequest.getPassword());
         newUser.setFullname(userCreateRequest.getFullname());
         newUser.setStatusId(UserStatus.ACTIVE);
         newUser.setRole(Role.of(userCreateRequest.getRole()));
         newUser.setCreatedBy(UserStatus.ACTIVE.getValue());
+
+        // Encrypt Password:
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        newUser.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
 
         return UserResponse.of(userRepository.save(newUser));
     }
