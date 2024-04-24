@@ -54,7 +54,8 @@ public class UserService {
         }
 
         if (request.getPassword() != null) {
-            user.setPassword(request.getPassword());
+            PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
         if (request.getRole() != null) {

@@ -11,8 +11,8 @@ public enum ErrorCode {
 
     // 2000:
     USERNAME_EXISTS(2000, "Username đã tồn tại"),
-    USER_NOT_EXISTS(2001, "User không tồn tại")
-
+    USER_NOT_EXISTS(2001, "User không tồn tại"),
+    USER_PASSWORD_INCORRECT(2002, "Thông tin tài khoản hoặc mật khẩu không chính xác")
 
     ;
 
