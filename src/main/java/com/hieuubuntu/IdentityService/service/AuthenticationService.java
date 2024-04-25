@@ -13,7 +13,9 @@ import com.hieuubuntu.IdentityService.exception.type.AppException;
 import com.hieuubuntu.IdentityService.repositories.UserRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -58,8 +61,21 @@ public class AuthenticationService {
     }
 
     // verify token
-    public IntrospectResponse introspect(IntrospectRequest request) {
+    public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
+        var token = request.getToken();
 
+        JWSVerifier verifier = new MACVerifier(SINGER_KEY.getBytes());
+
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        // check time expired:
+        Date expireTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        var verified = signedJWT.verify(verifier);
+
+        return IntrospectResponse.builder()
+                .isValid(verified && expireTime.after(new Date()))
+                .build();
     }
 
     private String generateToken(String username) throws JOSEException {

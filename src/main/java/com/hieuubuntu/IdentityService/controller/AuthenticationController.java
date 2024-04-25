@@ -11,6 +11,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
@@ -25,10 +27,9 @@ public class AuthenticationController {
     }
 
     @PostMapping("/introspect")
-    DefaultResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) {
+    DefaultResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) throws ParseException, JOSEException {
         DefaultResponse<IntrospectResponse> response = new DefaultResponse<>();
         response.setData(authService.introspect(request));
         return response;
     }
-
 }
