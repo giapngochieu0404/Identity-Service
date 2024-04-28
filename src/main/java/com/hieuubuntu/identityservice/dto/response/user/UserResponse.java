@@ -15,7 +15,6 @@ public class UserResponse {
     private String username;
     private String fullname;
     private String statusId;
-    private Set<String> role;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Integer createdBy;
@@ -27,7 +26,6 @@ public class UserResponse {
                 .username(user.getUsername())
                 .fullname(user.getFullname())
                 .statusId(user.getStatusId().getName())
-                .role(Collections.singleton(user.getRole().getName()))
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .createdBy(user.getCreatedBy())

@@ -9,6 +9,7 @@ import com.hieuubuntu.identityservice.entity.User;
 import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
 import com.hieuubuntu.identityservice.exception.type.AppException;
 import com.hieuubuntu.identityservice.repositories.UserRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,6 @@ public class UserService {
         newUser.setUsername(userCreateRequest.getUsername());
         newUser.setFullname(userCreateRequest.getFullname());
         newUser.setStatusId(UserStatus.ACTIVE);
-        newUser.setRole(Role.of(userCreateRequest.getRole()));
         newUser.setCreatedBy(UserStatus.ACTIVE.getValue());
 
         // Encrypt Password:
@@ -60,10 +60,6 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
-        if (request.getRole() != null) {
-            user.setRole(Role.of(request.getRole()));
-        }
-
         if (request.getStatusId() != null) {
             user.setStatusId(UserStatus.of(request.getStatusId()));
         }
@@ -72,6 +68,17 @@ public class UserService {
 
         userRepository.save(user);
 
+        return UserResponse.of(user);
+    }
+
+    public UserResponse getMyInfo() {
+        var context = SecurityContextHolder.getContext();
+        String username = context.getAuthentication().getName();
+        // TODO: giải mã:
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTS);
+        }
         return UserResponse.of(user);
     }
 }

@@ -23,6 +23,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+
 @Service
 public class AuthenticationService {
     private final UserRepository userRepository;
@@ -49,7 +50,7 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.USER_PASSWORD_INCORRECT);
         }
 
-        var token = generateToken(user.getUsername());
+        var token = generateToken(user);
 
         return AuthenticationResponse.builder()
                 .token(token)
@@ -57,7 +58,7 @@ public class AuthenticationService {
                 .build();
     }
 
-    // verify token
+    // verify token: check token có phải được tạo ra từ hệ thống vs thuật toán + secret key của hệ thống hay không
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
         var token = request.getToken();
 
@@ -75,13 +76,13 @@ public class AuthenticationService {
                 .build();
     }
 
-    private String generateToken(String username) throws JOSEException {
+    private String generateToken(User user) throws JOSEException {
         // header
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         // payload:
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(username)
+                .subject(user.getUsername()) // mã hóa
                 .issuer("hieuubuntu.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(

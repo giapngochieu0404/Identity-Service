@@ -1,6 +1,5 @@
 package com.hieuubuntu.identityservice.entity;
 
-import com.hieuubuntu.identityservice.constants.enums.Role;
 import com.hieuubuntu.identityservice.constants.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -30,11 +29,6 @@ public class User {
             converter = UserStatus.Converter.class
     )
     private UserStatus statusId;
-
-    @Convert(
-            converter = Role.Converter.class
-    )
-    private Role role;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

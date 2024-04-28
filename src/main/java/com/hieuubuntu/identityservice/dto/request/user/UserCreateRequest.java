@@ -16,6 +16,4 @@ public class UserCreateRequest {
 
     @NotNull(message = "Thiếu full name")
     private String fullname;
-
-    private Integer role;
 }

@@ -4,6 +4,7 @@ import com.hieuubuntu.identityservice.dto.response.DefaultResponse;
 import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
 import com.hieuubuntu.identityservice.exception.type.AppException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -40,11 +41,10 @@ public class GlobalExceptionHandler{
         response.setCode(ErrorCode.INVALID_PARAMS_REQUEST.getCode());
 
         String messageError = "Lỗi không xác định";
-
-        if (e.getFieldError() != null) {
-            messageError = e.getFieldError().getDefaultMessage();
+        FieldError fieldError = e.getFieldError();
+        if (fieldError != null) {
+            messageError = fieldError.getDefaultMessage();
         }
-
         response.setMessage(messageError);
 
         return ResponseEntity.badRequest().body(response);

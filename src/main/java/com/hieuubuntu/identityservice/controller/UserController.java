@@ -6,33 +6,47 @@ import com.hieuubuntu.identityservice.dto.response.DefaultResponse;
 import com.hieuubuntu.identityservice.dto.response.user.UserResponse;
 import com.hieuubuntu.identityservice.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping
-    DefaultResponse create(@RequestBody @Valid UserCreateRequest request) {
+    DefaultResponse<UserResponse> create(@RequestBody @Valid UserCreateRequest request) {
         DefaultResponse<UserResponse> response = new DefaultResponse<>();
         response.setData(userService.createUser(request));
         return response;
     }
 
     @GetMapping
-    DefaultResponse getByUserName(@RequestParam(name = "username") String username) {
+    DefaultResponse<UserResponse> getByUserName(@RequestParam(name = "username") String username) {
         DefaultResponse<UserResponse> response = new DefaultResponse<>();
         response.setData(userService.getByUsername(username));
         return response;
     }
 
     @PutMapping("/{user_id}")
-    DefaultResponse updateUser(@PathVariable("user_id") Long userId, @RequestBody UserUpdateRequest request) {
+    DefaultResponse<UserResponse> updateUser(@PathVariable("user_id") Long userId, @RequestBody UserUpdateRequest request) {
         DefaultResponse<UserResponse> response = new DefaultResponse<>();
         response.setData(userService.updateUser(userId, request));
         return response;
     }
+
+
+    @GetMapping("/get-info")
+    DefaultResponse<UserResponse> getMyInfo() {
+        DefaultResponse<UserResponse> response = new DefaultResponse<>();
+        response.setData(userService.getMyInfo());
+        return response;
+    }
+
 }
