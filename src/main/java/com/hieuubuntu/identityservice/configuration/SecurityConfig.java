@@ -30,7 +30,9 @@ public class SecurityConfig {
 
         // Đăng kí 1 provider manager support cho Authentication provider
         httpSecurity.oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder()))); // Cung cấp cho authentication provider 1 decoder để decode token
+                oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())) // Cung cấp cho authentication provider 1 decoder để decode token
+                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // Bắt lỗi 401: Do lỗi 401 xảy ra ở tầng filter, chưa vào đến tầng application nên phải bắt ở đây.
+        );
 
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 

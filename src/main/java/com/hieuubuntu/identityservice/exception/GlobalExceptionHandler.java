@@ -4,6 +4,7 @@ import com.hieuubuntu.identityservice.dto.response.DefaultResponse;
 import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
 import com.hieuubuntu.identityservice.exception.type.AppException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -31,7 +32,19 @@ public class GlobalExceptionHandler{
         response.setCode(errorCode.getCode());
         response.setMessage(errorCode.getMessage());
 
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity.status(errorCode.getStatusCode()).body(response);
+    }
+
+    @ExceptionHandler(value = AccessDeniedException.class)
+    ResponseEntity<DefaultResponse> handleAppExceptions(AccessDeniedException e) {
+        ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
+
+        DefaultResponse response = new DefaultResponse();
+        response.setSuccess(false);
+        response.setCode(errorCode.getCode());
+        response.setMessage(errorCode.getMessage());
+
+        return ResponseEntity.status(errorCode.getStatusCode()).body(response);
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
@@ -40,7 +53,7 @@ public class GlobalExceptionHandler{
         response.setSuccess(false);
         response.setCode(ErrorCode.INVALID_PARAMS_REQUEST.getCode());
 
-        String messageError = "Lỗi không xác định";
+        String messageError = ErrorCode.DEFAULT_ERROR.getMessage();
         FieldError fieldError = e.getFieldError();
         if (fieldError != null) {
             messageError = fieldError.getDefaultMessage();
