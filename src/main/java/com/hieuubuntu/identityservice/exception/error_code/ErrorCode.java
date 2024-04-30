@@ -12,6 +12,7 @@ public enum ErrorCode {
     INVALID_PARAMS_REQUEST(1001, "Tham số không hợp lệ", HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(1002, "unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1003, "Bạn không có quyền truy cập", HttpStatus.FORBIDDEN),
+    NOT_PERMISSION(1004, "Bạn không có quyền: {name}", HttpStatus.FORBIDDEN),
 
     // 2000:
     USERNAME_EXISTS(2000, "Username đã tồn tại", HttpStatus.BAD_REQUEST),

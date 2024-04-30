@@ -4,6 +4,7 @@ import com.hieuubuntu.identityservice.dto.request.user.UserCreateRequest;
 import com.hieuubuntu.identityservice.dto.request.user.UserUpdateRequest;
 import com.hieuubuntu.identityservice.dto.response.DefaultResponse;
 import com.hieuubuntu.identityservice.dto.response.user.UserResponse;
+import com.hieuubuntu.identityservice.permissions.CanPer;
 import com.hieuubuntu.identityservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ public class UserController {
         return response;
     }
 
+    @CanPer(name = "user.management", message = "NOT_PERMISSION")
     @GetMapping
     DefaultResponse<UserResponse> getByUserName(@RequestParam(name = "username") String username) {
         DefaultResponse<UserResponse> response = new DefaultResponse<>();
