@@ -3,8 +3,10 @@ package com.hieuubuntu.identityservice.service;
 import com.hieuubuntu.identityservice.dto.request.authentication.IntrospectRequest;
 import com.hieuubuntu.identityservice.dto.request.authentication.LoginRequest;
 import com.hieuubuntu.identityservice.dto.request.authentication.LogoutRequest;
+import com.hieuubuntu.identityservice.dto.request.authentication.RefreshTokenRequest;
 import com.hieuubuntu.identityservice.dto.response.authentication.AuthenticationResponse;
 import com.hieuubuntu.identityservice.dto.response.authentication.IntrospectResponse;
+import com.hieuubuntu.identityservice.dto.response.user.UserResponse;
 import com.hieuubuntu.identityservice.entity.InvalidToken;
 import com.hieuubuntu.identityservice.entity.User;
 import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
@@ -19,6 +21,7 @@ import com.nimbusds.jwt.SignedJWT;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -85,6 +88,16 @@ public class AuthenticationService {
         // Verify token có hợp lệ hay không: Không hợp lệ sẽ throw Access Denied Exception
         SignedJWT signedJWT = verifyToken(token);
 
+        if (signedJWT == null) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        saveIsValidToken(signedJWT, token);
+
+    }
+
+
+    private void saveIsValidToken(SignedJWT signedJWT, String token) throws ParseException {
         // Get jwt Id:
         var jwtId = signedJWT.getJWTClaimsSet().getJWTID();
 
@@ -146,5 +159,30 @@ public class AuthenticationService {
         jwsObject.sign(new MACSigner(signerKey.getBytes()));
 
         return jwsObject.serialize();
+    }
+
+    public AuthenticationResponse refreshToken(RefreshTokenRequest request) throws JOSEException, ParseException {
+        // verify token:
+        SignedJWT signedJWT = verifyToken(request.getToken());
+        if (signedJWT == null) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        // Huỷ token cũ:
+        saveIsValidToken(signedJWT, request.getToken());
+
+        String username = signedJWT.getJWTClaimsSet().getSubject(); // Giải mã
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTS);
+        }
+
+        // Gen new token
+        var token = generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
     }
 }

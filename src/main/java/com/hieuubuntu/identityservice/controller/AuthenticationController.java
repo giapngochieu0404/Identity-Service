@@ -3,6 +3,7 @@ package com.hieuubuntu.identityservice.controller;
 import com.hieuubuntu.identityservice.dto.request.authentication.IntrospectRequest;
 import com.hieuubuntu.identityservice.dto.request.authentication.LoginRequest;
 import com.hieuubuntu.identityservice.dto.request.authentication.LogoutRequest;
+import com.hieuubuntu.identityservice.dto.request.authentication.RefreshTokenRequest;
 import com.hieuubuntu.identityservice.dto.response.DefaultResponse;
 import com.hieuubuntu.identityservice.dto.response.authentication.AuthenticationResponse;
 import com.hieuubuntu.identityservice.dto.response.authentication.IntrospectResponse;
@@ -41,6 +42,13 @@ public class AuthenticationController {
     DefaultResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
         DefaultResponse<Void> response = new DefaultResponse<>();
         authService.logout(request);
+        return response;
+    }
+
+    @PostMapping("/refresh-token")
+    DefaultResponse<AuthenticationResponse> refreshToken(@RequestBody RefreshTokenRequest request) throws ParseException, JOSEException {
+        DefaultResponse<AuthenticationResponse> response = new DefaultResponse<>();
+        response.setData(authService.refreshToken(request));
         return response;
     }
 }
