@@ -2,11 +2,14 @@ package com.hieuubuntu.identityservice.service;
 
 import com.hieuubuntu.identityservice.dto.request.authentication.IntrospectRequest;
 import com.hieuubuntu.identityservice.dto.request.authentication.LoginRequest;
+import com.hieuubuntu.identityservice.dto.request.authentication.LogoutRequest;
 import com.hieuubuntu.identityservice.dto.response.authentication.AuthenticationResponse;
 import com.hieuubuntu.identityservice.dto.response.authentication.IntrospectResponse;
+import com.hieuubuntu.identityservice.entity.InvalidToken;
 import com.hieuubuntu.identityservice.entity.User;
 import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
 import com.hieuubuntu.identityservice.exception.type.AppException;
+import com.hieuubuntu.identityservice.repositories.InvalidTokenRepository;
 import com.hieuubuntu.identityservice.repositories.UserRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -14,6 +17,7 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,13 +27,19 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.UUID;
 
+@Slf4j
 @Service
 public class AuthenticationService {
     private final UserRepository userRepository;
+    private final InvalidTokenRepository invalidTokenRepository;
 
-    public AuthenticationService(UserRepository userRepository) {
+    public AuthenticationService(
+            UserRepository userRepository,
+            InvalidTokenRepository invalidTokenRepository) {
         this.userRepository = userRepository;
+        this.invalidTokenRepository = invalidTokenRepository;
     }
 
     @NonFinal
@@ -43,7 +53,6 @@ public class AuthenticationService {
         }
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
 
         if (!authenticated) {
@@ -60,8 +69,37 @@ public class AuthenticationService {
 
     // verify token: check token có phải được tạo ra từ hệ thống vs thuật toán + secret key của hệ thống hay không
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
+        // Verify token có hợp lệ hay không: Không hợp lệ sẽ throw Unauthenticated
+        var isValid = verifyToken(request.getToken());
+
+        return IntrospectResponse.builder()
+                .isValid(isValid != null)
+                .build();
+    }
+
+
+    // Logout:
+    public void logout(LogoutRequest request) throws ParseException, JOSEException {
         var token = request.getToken();
 
+        // Verify token có hợp lệ hay không: Không hợp lệ sẽ throw Access Denied Exception
+        SignedJWT signedJWT = verifyToken(token);
+
+        // Get jwt Id:
+        var jwtId = signedJWT.getJWTClaimsSet().getJWTID();
+
+        // Lưu vào bảng invalid_tokens:
+        InvalidToken invalidToken = InvalidToken.builder()
+                .id(jwtId)
+                .token(token)
+                .expiredAt(signedJWT.getJWTClaimsSet().getExpirationTime())
+                .build();
+
+        invalidTokenRepository.save(invalidToken);
+    }
+
+
+    public SignedJWT verifyToken(String token) throws ParseException, JOSEException {
         JWSVerifier verifier = new MACVerifier(signerKey.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
@@ -69,11 +107,18 @@ public class AuthenticationService {
         // check time expired:
         Date expireTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
+        String jwtId = signedJWT.getJWTClaimsSet().getJWTID();
+
         var verified = signedJWT.verify(verifier);
 
-        return IntrospectResponse.builder()
-                .isValid(verified && expireTime.after(new Date()))
-                .build();
+        if (!verified
+                || !expireTime.after(new Date()) // Đã hết hạn
+                || invalidTokenRepository.existsById(jwtId) // Đã bị logout
+        ) {
+            return null;
+        }
+
+        return signedJWT;
     }
 
     private String generateToken(User user) throws JOSEException {
@@ -89,6 +134,7 @@ public class AuthenticationService {
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
                 .claim("clientId", "hieuubuntu")
+                .jwtID(UUID.randomUUID().toString()) // Dùng để logout
                 .build();
 
 

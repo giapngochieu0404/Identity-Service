@@ -7,7 +7,6 @@ import com.hieuubuntu.identityservice.dto.response.user.UserResponse;
 import com.hieuubuntu.identityservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j

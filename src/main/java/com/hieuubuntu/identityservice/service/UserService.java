@@ -10,16 +10,17 @@ import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
 import com.hieuubuntu.identityservice.exception.type.AppException;
 import com.hieuubuntu.identityservice.repositories.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserResponse createUser(UserCreateRequest userCreateRequest) {
@@ -34,7 +35,6 @@ public class UserService {
         newUser.setCreatedBy(UserStatus.ACTIVE.getValue());
 
         // Encrypt Password:
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         newUser.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
 
         return UserResponse.of(userRepository.save(newUser));
@@ -56,7 +56,6 @@ public class UserService {
         }
 
         if (request.getPassword() != null) {
-            PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
