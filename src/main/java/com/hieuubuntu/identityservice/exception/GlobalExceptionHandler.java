@@ -5,6 +5,7 @@ import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
 import com.hieuubuntu.identityservice.exception.type.AppException;
 import com.hieuubuntu.identityservice.permissions.CanPer;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
@@ -87,6 +88,7 @@ public class GlobalExceptionHandler{
         response.setSuccess(false);
         int code = ErrorCode.DEFAULT_ERROR.getCode();
         String message = ErrorCode.DEFAULT_ERROR.getMessage();
+        HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
 
         // Xử lý exception không có quyền:
         CanPer canPer = e.getMethod().getAnnotation(CanPer.class);
@@ -94,11 +96,12 @@ public class GlobalExceptionHandler{
             ErrorCode errorCode = ErrorCode.valueOf(canPer.message());
             code = errorCode.getCode();
             message = mapAttribute(errorCode.getMessage(), canPer.name());
+            httpStatus = HttpStatus.FORBIDDEN;
         }
 
         response.setMessage(message);
         response.setCode(code);
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity.status(httpStatus).body(response);
     }
 
     private String mapAttribute(String message, String attribute) {
