@@ -3,6 +3,8 @@ package com.hieuubuntu.identityservice.exception;
 import com.hieuubuntu.identityservice.dto.response.DefaultResponse;
 import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
 import com.hieuubuntu.identityservice.exception.type.AppException;
+import com.hieuubuntu.identityservice.permissions.CanPer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
@@ -10,12 +12,18 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
+import java.util.Map;
+import java.util.Objects;
+
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler{
     // Normal:
     @ExceptionHandler(value = Exception.class)
-    ResponseEntity<DefaultResponse> handleAllExceptions(Exception e) {
+    ResponseEntity<DefaultResponse> handleAllExceptions(RuntimeException e) {
+        log.error("RuntimeException:", e.toString());
         DefaultResponse response = new DefaultResponse();
         response.setSuccess(false);
         response.setCode(ErrorCode.DEFAULT_ERROR.getCode());
@@ -70,6 +78,31 @@ public class GlobalExceptionHandler{
         response.setCode(ErrorCode.INVALID_PARAMS_REQUEST.getCode());
         response.setMessage(e.getParameterName() + " is required");
         return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(value = HandlerMethodValidationException.class)
+    ResponseEntity<DefaultResponse> handleMethodValidationException(HandlerMethodValidationException e) {
+        log.error("HandlerMethodValidationException:", e.toString());
+        DefaultResponse response = new DefaultResponse();
+        response.setSuccess(false);
+        int code = ErrorCode.DEFAULT_ERROR.getCode();
+        String message = ErrorCode.DEFAULT_ERROR.getMessage();
+
+        // Xử lý exception không có quyền:
+        CanPer canPer = e.getMethod().getAnnotation(CanPer.class);
+        if (Objects.nonNull(canPer)) {
+            ErrorCode errorCode = ErrorCode.valueOf(canPer.message());
+            code = errorCode.getCode();
+            message = mapAttribute(errorCode.getMessage(), canPer.name());
+        }
+
+        response.setMessage(message);
+        response.setCode(code);
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    private String mapAttribute(String message, String attribute) {
+        return message.replace("{name}", attribute);
     }
 
 }
