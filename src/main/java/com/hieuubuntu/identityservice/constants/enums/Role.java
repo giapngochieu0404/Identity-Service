@@ -1,14 +1,15 @@
 package com.hieuubuntu.identityservice.constants.enums;
 
+import java.util.stream.Stream;
+
 import jakarta.persistence.AttributeConverter;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.stream.Stream;
-
 @Getter
 @AllArgsConstructor
-public enum Role implements PersistableEnum<Integer>{
+public enum Role implements PersistableEnum<Integer> {
     ADMIN(1, "Admin"),
     USER(2, "User"),
     ;
@@ -27,12 +28,12 @@ public enum Role implements PersistableEnum<Integer>{
 
         @Override
         public Integer convertToDatabaseColumn(Role role) {
-           return role == null ? null : role.getValue();
+            return role == null ? null : role.getValue();
         }
 
         @Override
         public Role convertToEntityAttribute(Integer value) {
-           return Role.of(value);
+            return Role.of(value);
         }
     }
 }

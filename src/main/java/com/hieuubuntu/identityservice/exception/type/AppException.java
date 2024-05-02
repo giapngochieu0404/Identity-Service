@@ -1,6 +1,7 @@
 package com.hieuubuntu.identityservice.exception.type;
 
 import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
+
 import lombok.Getter;
 import lombok.Setter;
 

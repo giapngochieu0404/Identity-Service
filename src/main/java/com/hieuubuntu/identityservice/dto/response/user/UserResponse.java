@@ -1,12 +1,11 @@
 package com.hieuubuntu.identityservice.dto.response.user;
 
+import java.time.LocalDateTime;
+
 import com.hieuubuntu.identityservice.entity.User;
+
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Set;
 
 @Data
 @Builder

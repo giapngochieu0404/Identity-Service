@@ -1,5 +1,9 @@
 package com.hieuubuntu.identityservice.service;
 
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.hieuubuntu.identityservice.constants.enums.Role;
 import com.hieuubuntu.identityservice.constants.enums.UserStatus;
 import com.hieuubuntu.identityservice.dto.request.user.UserCreateRequest;
@@ -9,9 +13,6 @@ import com.hieuubuntu.identityservice.entity.User;
 import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
 import com.hieuubuntu.identityservice.exception.type.AppException;
 import com.hieuubuntu.identityservice.repositories.UserRepository;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
@@ -25,7 +26,7 @@ public class UserService {
 
     public UserResponse createUser(UserCreateRequest userCreateRequest) {
         if (userRepository.existsByUsername(userCreateRequest.getUsername())) {
-             throw new AppException(ErrorCode.USERNAME_EXISTS);
+            throw new AppException(ErrorCode.USERNAME_EXISTS);
         }
 
         User newUser = new User();

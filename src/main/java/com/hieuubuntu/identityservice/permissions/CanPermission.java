@@ -1,11 +1,13 @@
 package com.hieuubuntu.identityservice.permissions;
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import com.hieuubuntu.identityservice.entity.User;
 import com.hieuubuntu.identityservice.repositories.PermissionRepositoryImpl;
 import com.hieuubuntu.identityservice.repositories.UserRepository;
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 public class CanPermission implements ConstraintValidator<CanPer, Object> {
     private String name;
@@ -13,8 +15,7 @@ public class CanPermission implements ConstraintValidator<CanPer, Object> {
     private final UserRepository userRepository;
     private final PermissionRepositoryImpl permissionRepositoryImpl;
 
-    public CanPermission(UserRepository userRepository,
-                         PermissionRepositoryImpl permissionRepositoryImpl) {
+    public CanPermission(UserRepository userRepository, PermissionRepositoryImpl permissionRepositoryImpl) {
         this.userRepository = userRepository;
         this.permissionRepositoryImpl = permissionRepositoryImpl;
     }
@@ -45,5 +46,4 @@ public class CanPermission implements ConstraintValidator<CanPer, Object> {
     private Boolean checkPermission(Integer userId) {
         return permissionRepositoryImpl.userCanPermission(userId, name);
     }
-
 }

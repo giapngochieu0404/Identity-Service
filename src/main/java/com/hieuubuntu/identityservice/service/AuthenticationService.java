@@ -1,12 +1,22 @@
 package com.hieuubuntu.identityservice.service;
 
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.hieuubuntu.identityservice.dto.request.authentication.IntrospectRequest;
 import com.hieuubuntu.identityservice.dto.request.authentication.LoginRequest;
 import com.hieuubuntu.identityservice.dto.request.authentication.LogoutRequest;
 import com.hieuubuntu.identityservice.dto.request.authentication.RefreshTokenRequest;
 import com.hieuubuntu.identityservice.dto.response.authentication.AuthenticationResponse;
 import com.hieuubuntu.identityservice.dto.response.authentication.IntrospectResponse;
-import com.hieuubuntu.identityservice.dto.response.user.UserResponse;
 import com.hieuubuntu.identityservice.entity.InvalidToken;
 import com.hieuubuntu.identityservice.entity.User;
 import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
@@ -18,19 +28,9 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.text.ParseException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -38,9 +38,7 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final InvalidTokenRepository invalidTokenRepository;
 
-    public AuthenticationService(
-            UserRepository userRepository,
-            InvalidTokenRepository invalidTokenRepository) {
+    public AuthenticationService(UserRepository userRepository, InvalidTokenRepository invalidTokenRepository) {
         this.userRepository = userRepository;
         this.invalidTokenRepository = invalidTokenRepository;
     }
@@ -64,10 +62,7 @@ public class AuthenticationService {
 
         var token = generateToken(user);
 
-        return AuthenticationResponse.builder()
-                .token(token)
-                .authenticated(true)
-                .build();
+        return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
 
     // verify token: check token có phải được tạo ra từ hệ thống vs thuật toán + secret key của hệ thống hay không
@@ -75,11 +70,8 @@ public class AuthenticationService {
         // Verify token có hợp lệ hay không: Không hợp lệ sẽ throw Unauthenticated
         var isValid = verifyToken(request.getToken());
 
-        return IntrospectResponse.builder()
-                .isValid(isValid != null)
-                .build();
+        return IntrospectResponse.builder().isValid(isValid != null).build();
     }
-
 
     // Logout:
     public void logout(LogoutRequest request) throws ParseException, JOSEException {
@@ -93,9 +85,7 @@ public class AuthenticationService {
         }
 
         saveIsValidToken(signedJWT, token);
-
     }
-
 
     private void saveIsValidToken(SignedJWT signedJWT, String token) throws ParseException {
         // Get jwt Id:
@@ -110,7 +100,6 @@ public class AuthenticationService {
 
         invalidTokenRepository.save(invalidToken);
     }
-
 
     public SignedJWT verifyToken(String token) throws ParseException, JOSEException {
         JWSVerifier verifier = new MACVerifier(signerKey.getBytes());
@@ -143,19 +132,16 @@ public class AuthenticationService {
                 .subject(user.getUsername()) // mã hóa
                 .issuer("hieuubuntu.com")
                 .issueTime(new Date())
-                .expirationTime(new Date(
-                        Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
-                ))
+                .expirationTime(new Date(Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()))
                 .claim("clientId", "hieuubuntu")
                 .jwtID(UUID.randomUUID().toString()) // Dùng để logout
                 .build();
-
 
         Payload jwtPayload = new Payload(jwtClaimsSet.toJSONObject());
 
         JWSObject jwsObject = new JWSObject(header, jwtPayload);
 
-        //Sign
+        // Sign
         jwsObject.sign(new MACSigner(signerKey.getBytes()));
 
         return jwsObject.serialize();
@@ -180,9 +166,6 @@ public class AuthenticationService {
         // Gen new token
         var token = generateToken(user);
 
-        return AuthenticationResponse.builder()
-                .token(token)
-                .authenticated(true)
-                .build();
+        return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
 }

@@ -1,18 +1,18 @@
 package com.hieuubuntu.identityservice.constants.enums;
 
+import java.util.stream.Stream;
+
 import jakarta.persistence.AttributeConverter;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.stream.Stream;
-
 @Getter
 @AllArgsConstructor
-public enum UserStatus implements PersistableEnum<Integer>{
+public enum UserStatus implements PersistableEnum<Integer> {
     ACTIVE(1, "Đang hoạt động"),
     LOCK(2, "Khóa"),
-    INACTIVE(3, "Ngừng hoạt động")
-    ;
+    INACTIVE(3, "Ngừng hoạt động");
 
     private final Integer value;
     private final String name;
@@ -28,12 +28,12 @@ public enum UserStatus implements PersistableEnum<Integer>{
 
         @Override
         public Integer convertToDatabaseColumn(UserStatus userStatus) {
-           return userStatus == null ? null : userStatus.getValue();
+            return userStatus == null ? null : userStatus.getValue();
         }
 
         @Override
         public UserStatus convertToEntityAttribute(Integer value) {
-           return UserStatus.of(value);
+            return UserStatus.of(value);
         }
     }
 }

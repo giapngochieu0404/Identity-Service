@@ -1,6 +1,7 @@
 package com.hieuubuntu.identityservice.dto.request.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,5 +13,6 @@ public class UserUpdateRequest {
 
     @JsonProperty("status_id")
     private Integer statusId;
+
     private Integer role;
 }
