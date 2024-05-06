@@ -1,4 +1,4 @@
-package com.hieuubuntu.identityservice.permissions;
+package com.hieuubuntu.identityservice.annotations;
 
 import java.lang.annotation.*;
 
@@ -7,9 +7,8 @@ import jakarta.validation.Payload;
 
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {CanPermission.class})
 public @interface CanPer {
-    String message() default "Bạn không có quyền truy cập tính năng này";
+    String message() default "NOT_PERMISSION";
 
     Class<?>[] groups() default {};
 

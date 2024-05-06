@@ -2,6 +2,7 @@ package com.hieuubuntu.identityservice.exception;
 
 import java.util.Objects;
 
+import com.hieuubuntu.identityservice.exception.type.CanPermissionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,7 +16,7 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import com.hieuubuntu.identityservice.dto.response.DefaultResponse;
 import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
 import com.hieuubuntu.identityservice.exception.type.AppException;
-import com.hieuubuntu.identityservice.permissions.CanPer;
+import com.hieuubuntu.identityservice.annotations.CanPer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -84,30 +85,17 @@ public class GlobalExceptionHandler {
     }
 
     // CanPer
-    @ExceptionHandler(value = HandlerMethodValidationException.class)
-    ResponseEntity<DefaultResponse> handleMethodValidationException(HandlerMethodValidationException e) {
-        log.error("HandlerMethodValidationException:", e.toString());
+
+    // CanPer
+    @ExceptionHandler(value = CanPermissionException.class)
+    ResponseEntity<DefaultResponse> handleMethodValidationException(CanPermissionException e) {
+        log.error("CanPermissionException:", e.toString());
         DefaultResponse response = new DefaultResponse();
         response.setSuccess(false);
-        int code = ErrorCode.DEFAULT_ERROR.getCode();
-        String message = ErrorCode.DEFAULT_ERROR.getMessage();
-        HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-
-        // Xử lý exception không có quyền:
-        CanPer canPer = e.getMethod().getAnnotation(CanPer.class);
-        if (Objects.nonNull(canPer)) {
-            ErrorCode errorCode = ErrorCode.valueOf(canPer.message());
-            code = errorCode.getCode();
-            message = mapAttribute(errorCode.getMessage(), canPer.name());
-            httpStatus = HttpStatus.FORBIDDEN;
-        }
-
+        String message = e.getMessage();
         response.setMessage(message);
-        response.setCode(code);
-        return ResponseEntity.status(httpStatus).body(response);
+        response.setCode(ErrorCode.NOT_PERMISSION.getCode());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
-    private String mapAttribute(String message, String attribute) {
-        return message.replace("{name}", attribute);
-    }
 }

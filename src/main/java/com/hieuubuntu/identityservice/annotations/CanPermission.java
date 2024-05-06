@@ -1,4 +1,4 @@
-package com.hieuubuntu.identityservice.permissions;
+package com.hieuubuntu.identityservice.annotations;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
