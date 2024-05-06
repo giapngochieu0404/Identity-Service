@@ -1,14 +1,17 @@
 package com.hieuubuntu.identityservice.controller;
 
+import jakarta.validation.Valid;
+
+import org.springframework.web.bind.annotation.*;
+
 import com.hieuubuntu.identityservice.dto.request.user.UserCreateRequest;
 import com.hieuubuntu.identityservice.dto.request.user.UserUpdateRequest;
 import com.hieuubuntu.identityservice.dto.response.DefaultResponse;
 import com.hieuubuntu.identityservice.dto.response.user.UserResponse;
-import com.hieuubuntu.identityservice.permissions.CanPer;
+import com.hieuubuntu.identityservice.annotations.CanPer;
 import com.hieuubuntu.identityservice.service.UserService;
-import jakarta.validation.Valid;
+
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
     public UserController(UserService userService) {
         this.userService = userService;
     }
@@ -36,12 +40,12 @@ public class UserController {
     }
 
     @PutMapping("/{user_id}")
-    DefaultResponse<UserResponse> updateUser(@PathVariable("user_id") Long userId, @RequestBody UserUpdateRequest request) {
+    DefaultResponse<UserResponse> updateUser(
+            @PathVariable("user_id") Long userId, @RequestBody UserUpdateRequest request) {
         DefaultResponse<UserResponse> response = new DefaultResponse<>();
         response.setData(userService.updateUser(userId, request));
         return response;
     }
-
 
     @GetMapping("/get-info")
     DefaultResponse<UserResponse> getMyInfo() {
@@ -49,5 +53,4 @@ public class UserController {
         response.setData(userService.getMyInfo());
         return response;
     }
-
 }

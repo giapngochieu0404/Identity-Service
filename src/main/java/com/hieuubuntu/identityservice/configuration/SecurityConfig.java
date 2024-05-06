@@ -14,7 +14,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final String[] publicEndpoints = {"/auth/login", "/auth/introspect", "/auth/logout", "/auth/introspect", "/auth/refresh-token"};
+    private final String[] publicEndpoints = {
+        "/auth/login", "/auth/introspect", "/auth/logout", "/auth/introspect", "/auth/refresh-token"
+    };
 
     private final JwtDecoderImpl jwtDecoderImpl;
 
@@ -24,14 +26,19 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, publicEndpoints).permitAll()
-                .anyRequest().authenticated());
+        httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, publicEndpoints)
+                .permitAll()
+                .anyRequest()
+                .authenticated());
 
         // Đăng kí 1 provider manager support cho Authentication provider
-        httpSecurity.oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoderImpl)) // Cung cấp cho authentication provider 1 decoder để decode token
-                        .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // Bắt lỗi 401: Do lỗi 401 xảy ra ở tầng filter, chưa vào đến tầng application nên phải bắt ở đây.
-        );
+        httpSecurity.oauth2ResourceServer(
+                oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(
+                                jwtDecoderImpl)) // Cung cấp cho authentication provider 1 decoder để decode token
+                        .authenticationEntryPoint(
+                                new JwtAuthenticationEntryPoint()) // Bắt lỗi 401: Do lỗi 401 xảy ra ở tầng filter, chưa
+                // vào đến tầng application nên phải bắt ở đây.
+                );
 
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 

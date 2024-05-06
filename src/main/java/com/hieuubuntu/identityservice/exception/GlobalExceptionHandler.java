@@ -1,10 +1,9 @@
 package com.hieuubuntu.identityservice.exception;
 
-import com.hieuubuntu.identityservice.dto.response.DefaultResponse;
-import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
-import com.hieuubuntu.identityservice.exception.type.AppException;
-import com.hieuubuntu.identityservice.permissions.CanPer;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Objects;
+
+import com.hieuubuntu.identityservice.exception.type.CanPermissionException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
@@ -14,12 +13,16 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
-import java.util.Map;
-import java.util.Objects;
+import com.hieuubuntu.identityservice.dto.response.DefaultResponse;
+import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
+import com.hieuubuntu.identityservice.exception.type.AppException;
+import com.hieuubuntu.identityservice.annotations.CanPer;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ControllerAdvice
-public class GlobalExceptionHandler{
+public class GlobalExceptionHandler {
     // Normal:
     @ExceptionHandler(value = Exception.class)
     ResponseEntity<DefaultResponse> handleAllExceptions(RuntimeException e) {
@@ -72,7 +75,8 @@ public class GlobalExceptionHandler{
     }
 
     @ExceptionHandler(value = MissingServletRequestParameterException.class)
-    ResponseEntity<DefaultResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
+    ResponseEntity<DefaultResponse> handleMissingServletRequestParameterException(
+            MissingServletRequestParameterException e) {
         DefaultResponse response = new DefaultResponse();
         response.setSuccess(false);
         response.setCode(ErrorCode.INVALID_PARAMS_REQUEST.getCode());
@@ -80,29 +84,18 @@ public class GlobalExceptionHandler{
         return ResponseEntity.badRequest().body(response);
     }
 
-    @ExceptionHandler(value = HandlerMethodValidationException.class)
-    ResponseEntity<DefaultResponse> handleMethodValidationException(HandlerMethodValidationException e) {
-        log.error("HandlerMethodValidationException:", e.toString());
+    // CanPer
+
+    // CanPer
+    @ExceptionHandler(value = CanPermissionException.class)
+    ResponseEntity<DefaultResponse> handleMethodValidationException(CanPermissionException e) {
+        log.error("CanPermissionException:", e.toString());
         DefaultResponse response = new DefaultResponse();
         response.setSuccess(false);
-        int code = ErrorCode.DEFAULT_ERROR.getCode();
-        String message = ErrorCode.DEFAULT_ERROR.getMessage();
-
-        // Xử lý exception không có quyền:
-        CanPer canPer = e.getMethod().getAnnotation(CanPer.class);
-        if (Objects.nonNull(canPer)) {
-            ErrorCode errorCode = ErrorCode.valueOf(canPer.message());
-            code = errorCode.getCode();
-            message = mapAttribute(errorCode.getMessage(), canPer.name());
-        }
-
+        String message = e.getMessage();
         response.setMessage(message);
-        response.setCode(code);
-        return ResponseEntity.badRequest().body(response);
-    }
-
-    private String mapAttribute(String message, String attribute) {
-        return message.replace("{name}", attribute);
+        response.setCode(ErrorCode.NOT_PERMISSION.getCode());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
 }

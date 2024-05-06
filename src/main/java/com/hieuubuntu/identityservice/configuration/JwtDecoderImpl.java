@@ -1,9 +1,9 @@
 package com.hieuubuntu.identityservice.configuration;
 
-import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
-import com.hieuubuntu.identityservice.exception.type.AppException;
-import com.hieuubuntu.identityservice.service.AuthenticationService;
-import com.nimbusds.jose.JOSEException;
+import java.text.ParseException;
+import java.util.Objects;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -12,10 +12,10 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.spec.SecretKeySpec;
-import java.text.ParseException;
-import java.util.Objects;
-
+import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
+import com.hieuubuntu.identityservice.exception.type.AppException;
+import com.hieuubuntu.identityservice.service.AuthenticationService;
+import com.nimbusds.jose.JOSEException;
 
 // Cung cấp cho authentication provider 1 decoder:
 // Các thuật toán + thông số như cách đã mã hóa và tạo ra token trước đó
@@ -48,13 +48,11 @@ public class JwtDecoderImpl implements JwtDecoder {
 
         if (Objects.isNull(nimbusJwtDecoder)) {
             SecretKeySpec secretKeySpec = new SecretKeySpec(singerKey.getBytes(), "HS512");
-            nimbusJwtDecoder = NimbusJwtDecoder
-                    .withSecretKey(secretKeySpec)
+            nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(secretKeySpec)
                     .macAlgorithm(MacAlgorithm.HS512)
                     .build();
         }
 
         return nimbusJwtDecoder.decode(token);
-
     }
 }

@@ -1,22 +1,24 @@
 package com.hieuubuntu.identityservice.entity;
 
-import com.hieuubuntu.identityservice.constants.enums.UserStatus;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import com.hieuubuntu.identityservice.constants.enums.UserStatus;
+
+import lombok.Getter;
+import lombok.Setter;
+
 @Getter
 @Setter
 @Entity
 @Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue(
-            strategy = GenerationType.IDENTITY
-    )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String username;
@@ -25,13 +27,12 @@ public class User {
 
     private String fullname;
 
-    @Convert(
-            converter = UserStatus.Converter.class
-    )
+    @Convert(converter = UserStatus.Converter.class)
     private UserStatus statusId;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
