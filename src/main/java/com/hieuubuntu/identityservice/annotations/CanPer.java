@@ -2,7 +2,6 @@ package com.hieuubuntu.identityservice.annotations;
 
 import java.lang.annotation.*;
 
-import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
 @Target({ElementType.METHOD})

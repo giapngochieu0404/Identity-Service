@@ -4,11 +4,11 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.hieuubuntu.identityservice.annotations.CanPer;
 import com.hieuubuntu.identityservice.dto.request.user.UserCreateRequest;
 import com.hieuubuntu.identityservice.dto.request.user.UserUpdateRequest;
 import com.hieuubuntu.identityservice.dto.response.DefaultResponse;
 import com.hieuubuntu.identityservice.dto.response.user.UserResponse;
-import com.hieuubuntu.identityservice.annotations.CanPer;
 import com.hieuubuntu.identityservice.service.UserService;
 
 import lombok.extern.slf4j.Slf4j;

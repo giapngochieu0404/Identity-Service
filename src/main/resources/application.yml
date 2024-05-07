@@ -12,3 +12,5 @@ spring:
     show-sql: true
 jwt:
   signerKey: "6bpoG/rtwP6bzXEIUW9WK/KGMPny2HrL+Gcv6xFQLAdj1kHCuqTPr+djrAZ3okIJ"
+  valid-duration: 3600 # time hết hạn token (giây)
+  refreshable-duration: 86400 # time có thể refresh token kể từ lúc tạo (giây)

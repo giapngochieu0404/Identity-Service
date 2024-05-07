@@ -38,7 +38,7 @@ public class JwtDecoderImpl implements JwtDecoder {
     public Jwt decode(String token) throws JwtException {
 
         try {
-            var isValidToken = authenticationService.verifyToken(token);
+            var isValidToken = authenticationService.verifyToken(token, false);
             if (isValidToken == null) {
                 throw new AppException(ErrorCode.UNAUTHENTICATED);
             }
