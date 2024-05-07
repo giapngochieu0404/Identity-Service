@@ -47,6 +47,14 @@ public class AuthenticationService {
     @Value("${jwt.signerKey}")
     protected String signerKey;
 
+    @NonFinal
+    @Value("${jwt.valid-duration}")
+    protected Long validDuration;
+
+    @NonFinal
+    @Value("${jwt.refreshable-duration}")
+    protected Long refreshableDuration;
+
     public AuthenticationResponse login(LoginRequest request) throws JOSEException {
         User user = userRepository.findByUsername(request.getUsername());
         if (user == null) {
@@ -68,7 +76,7 @@ public class AuthenticationService {
     // verify token: check token có phải được tạo ra từ hệ thống vs thuật toán + secret key của hệ thống hay không
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
         // Verify token có hợp lệ hay không: Không hợp lệ sẽ throw Unauthenticated
-        var isValid = verifyToken(request.getToken());
+        var isValid = verifyToken(request.getToken(), false);
 
         return IntrospectResponse.builder().isValid(isValid != null).build();
     }
@@ -78,7 +86,7 @@ public class AuthenticationService {
         var token = request.getToken();
 
         // Verify token có hợp lệ hay không: Không hợp lệ sẽ throw Access Denied Exception
-        SignedJWT signedJWT = verifyToken(token);
+        SignedJWT signedJWT = verifyToken(token, true);
 
         if (signedJWT == null) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
@@ -101,13 +109,21 @@ public class AuthenticationService {
         invalidTokenRepository.save(invalidToken);
     }
 
-    public SignedJWT verifyToken(String token) throws ParseException, JOSEException {
+    public SignedJWT verifyToken(String token, boolean isRefreshToken) throws ParseException, JOSEException {
         JWSVerifier verifier = new MACVerifier(signerKey.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
 
         // check time expired:
-        Date expireTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        // 2 TH: 1 check token, 1 check refresh toke
+        Date expireTime = (isRefreshToken)
+                ? new Date(signedJWT
+                        .getJWTClaimsSet()
+                        .getIssueTime()
+                        .toInstant()
+                        .plus(refreshableDuration, ChronoUnit.SECONDS)
+                        .toEpochMilli())
+                : signedJWT.getJWTClaimsSet().getExpirationTime();
 
         String jwtId = signedJWT.getJWTClaimsSet().getJWTID();
 
@@ -132,7 +148,8 @@ public class AuthenticationService {
                 .subject(user.getUsername()) // mã hóa
                 .issuer("hieuubuntu.com")
                 .issueTime(new Date())
-                .expirationTime(new Date(Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()))
+                .expirationTime(new Date(
+                        Instant.now().plus(validDuration, ChronoUnit.SECONDS).toEpochMilli()))
                 .claim("clientId", "hieuubuntu")
                 .jwtID(UUID.randomUUID().toString()) // Dùng để logout
                 .build();
@@ -149,7 +166,7 @@ public class AuthenticationService {
 
     public AuthenticationResponse refreshToken(RefreshTokenRequest request) throws JOSEException, ParseException {
         // verify token:
-        SignedJWT signedJWT = verifyToken(request.getToken());
+        SignedJWT signedJWT = verifyToken(request.getToken(), true);
         if (signedJWT == null) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }

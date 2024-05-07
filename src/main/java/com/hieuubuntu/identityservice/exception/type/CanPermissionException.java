@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CanPermissionException extends RuntimeException{
+public class CanPermissionException extends RuntimeException {
     public CanPermissionException(String message) {
         super();
         this.message = message;

@@ -1,8 +1,5 @@
 package com.hieuubuntu.identityservice.exception;
 
-import java.util.Objects;
-
-import com.hieuubuntu.identityservice.exception.type.CanPermissionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -11,12 +8,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import com.hieuubuntu.identityservice.dto.response.DefaultResponse;
 import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
 import com.hieuubuntu.identityservice.exception.type.AppException;
-import com.hieuubuntu.identityservice.annotations.CanPer;
+import com.hieuubuntu.identityservice.exception.type.CanPermissionException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -97,5 +93,4 @@ public class GlobalExceptionHandler {
         response.setCode(ErrorCode.NOT_PERMISSION.getCode());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
-
 }
