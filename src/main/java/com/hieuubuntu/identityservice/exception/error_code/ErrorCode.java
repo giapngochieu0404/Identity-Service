@@ -18,7 +18,8 @@ public enum ErrorCode {
     // 2000:
     USERNAME_EXISTS(2000, "Username đã tồn tại", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTS(2001, "User không tồn tại", HttpStatus.NOT_FOUND),
-    USER_PASSWORD_INCORRECT(2002, "Thông tin tài khoản hoặc mật khẩu không chính xác", HttpStatus.BAD_REQUEST);
+    USER_PASSWORD_INCORRECT(2002, "Thông tin tài khoản hoặc mật khẩu không chính xác", HttpStatus.BAD_REQUEST),
+    USER_PROFILE_ERROR(2003, "Có lỗi xảy ra khi tạo user profile", HttpStatus.BAD_REQUEST);
 
     private int code;
     private String message;

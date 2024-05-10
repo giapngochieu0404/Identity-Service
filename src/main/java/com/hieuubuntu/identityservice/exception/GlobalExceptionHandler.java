@@ -81,8 +81,6 @@ public class GlobalExceptionHandler {
     }
 
     // CanPer
-
-    // CanPer
     @ExceptionHandler(value = CanPermissionException.class)
     ResponseEntity<DefaultResponse> handleMethodValidationException(CanPermissionException e) {
         log.error("CanPermissionException:", e.toString());

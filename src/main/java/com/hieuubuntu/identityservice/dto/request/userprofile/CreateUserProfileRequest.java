@@ -1,26 +1,22 @@
-package com.hieuubuntu.identityservice.dto.request.user;
+package com.hieuubuntu.identityservice.dto.request.userprofile;
 
 import java.time.LocalDate;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class UserCreateRequest {
-    @NotNull(message = "Thiếu username")
-    private String username;
-
-    @Size(min = 8, message = "Mật khẩu phải tối thiểu 8 kí tự")
-    private String password;
-
-    @NotNull(message = "Thiếu full name")
-    private String fullname;
+@Builder
+public class CreateUserProfileRequest {
+    @NotNull(message = "Thiếu userId")
+    @JsonProperty("user_id")
+    private Integer userId;
 
     @NotNull(message = "Thiếu ngày sinh")
     private LocalDate birthday;

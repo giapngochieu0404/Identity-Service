@@ -1,29 +1,37 @@
 package com.hieuubuntu.identityservice.service;
 
+import java.util.Objects;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.hieuubuntu.identityservice.clients.userprofile.UserProfileClient;
 import com.hieuubuntu.identityservice.constants.enums.Role;
 import com.hieuubuntu.identityservice.constants.enums.UserStatus;
 import com.hieuubuntu.identityservice.dto.request.user.UserCreateRequest;
 import com.hieuubuntu.identityservice.dto.request.user.UserUpdateRequest;
+import com.hieuubuntu.identityservice.dto.request.userprofile.CreateUserProfileRequest;
 import com.hieuubuntu.identityservice.dto.response.user.UserResponse;
+import com.hieuubuntu.identityservice.dto.response.userprofile.UserProfileResponse;
 import com.hieuubuntu.identityservice.entity.User;
 import com.hieuubuntu.identityservice.exception.error_code.ErrorCode;
 import com.hieuubuntu.identityservice.exception.type.AppException;
 import com.hieuubuntu.identityservice.repositories.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserProfileClient userProfileClient;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
+    @Transactional(rollbackFor = {Exception.class, Throwable.class})
     public UserResponse createUser(UserCreateRequest userCreateRequest) {
         if (userRepository.existsByUsername(userCreateRequest.getUsername())) {
             throw new AppException(ErrorCode.USERNAME_EXISTS);
@@ -38,7 +46,33 @@ public class UserService {
         // Encrypt Password:
         newUser.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
 
-        return UserResponse.of(userRepository.save(newUser));
+        // Create account user
+        User userAccount = userRepository.save(newUser);
+
+        // Call user profile service tạo profile
+        CreateUserProfileRequest requestProfile = CreateUserProfileRequest.builder()
+                .userId(userAccount.getId())
+                .positionId(userCreateRequest.getPositionId())
+                .address(userCreateRequest.getAddress())
+                .birthday(userCreateRequest.getBirthday())
+                .build();
+
+        var profile = createUserProfile(requestProfile);
+        if (Objects.isNull(profile)) {
+            throw new AppException(ErrorCode.USER_PROFILE_ERROR);
+        }
+
+        return UserResponse.of(userAccount, profile);
+    }
+
+    private UserProfileResponse createUserProfile(CreateUserProfileRequest request) {
+        var response = userProfileClient.createProfile(request);
+        if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
+            return Objects.requireNonNull(response.getBody()).getData();
+        }
+
+        log.error("Lỗi khi tạo profile.[{}]", response.getStatusCode().value());
+        return null;
     }
 
     public UserResponse getByUsername(String username) {
@@ -46,9 +80,11 @@ public class UserService {
         if (user == null) {
             throw new AppException(ErrorCode.USER_NOT_EXISTS);
         }
-        return UserResponse.of(user);
+
+        return UserResponse.of(user, getUserProfile(user.getId()));
     }
 
+    // Todo: Chỉ update user password ở đây, còn lại thông tin user update bên profile service
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
         User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTS));
 
@@ -68,7 +104,7 @@ public class UserService {
 
         userRepository.save(user);
 
-        return UserResponse.of(user);
+        return UserResponse.of(user, getUserProfile(user.getId()));
     }
 
     public UserResponse getMyInfo() {
@@ -79,6 +115,17 @@ public class UserService {
         if (user == null) {
             throw new AppException(ErrorCode.USER_NOT_EXISTS);
         }
-        return UserResponse.of(user);
+        return UserResponse.of(user, getUserProfile(user.getId()));
+    }
+
+    private UserProfileResponse getUserProfile(Integer userId) {
+        var response = userProfileClient.getProfile(userId);
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            log.error("Lỗi lấy thông tin profile.[{}]", response.getStatusCode().value());
+            return null;
+        }
+
+        return response.hasBody() ? Objects.requireNonNull(response.getBody()).getData() : null;
     }
 }

@@ -24,6 +24,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    @CanPer(name = "user.management")
     @PostMapping
     DefaultResponse<UserResponse> create(@RequestBody @Valid UserCreateRequest request) {
         DefaultResponse<UserResponse> response = new DefaultResponse<>();
@@ -31,7 +32,7 @@ public class UserController {
         return response;
     }
 
-    @CanPer(name = "user.management", message = "NOT_PERMISSION")
+    @CanPer(name = "user.management")
     @GetMapping
     DefaultResponse<UserResponse> getByUserName(@RequestParam(name = "username") String username) {
         DefaultResponse<UserResponse> response = new DefaultResponse<>();
