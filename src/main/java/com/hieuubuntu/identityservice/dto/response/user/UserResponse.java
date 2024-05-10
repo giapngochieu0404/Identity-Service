@@ -2,6 +2,7 @@ package com.hieuubuntu.identityservice.dto.response.user;
 
 import java.time.LocalDateTime;
 
+import com.hieuubuntu.identityservice.dto.response.userprofile.UserProfileResponse;
 import com.hieuubuntu.identityservice.entity.User;
 
 import lombok.Builder;
@@ -18,8 +19,9 @@ public class UserResponse {
     private LocalDateTime updatedAt;
     private Integer createdBy;
     private Integer modifiedBy;
+    private UserProfileResponse detailProfile;
 
-    public static UserResponse of(User user) {
+    public static UserResponse of(User user, UserProfileResponse profile) {
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -29,6 +31,7 @@ public class UserResponse {
                 .updatedAt(user.getUpdatedAt())
                 .createdBy(user.getCreatedBy())
                 .modifiedBy(user.getModifiedBy())
+                .detailProfile(profile)
                 .build();
     }
 }
