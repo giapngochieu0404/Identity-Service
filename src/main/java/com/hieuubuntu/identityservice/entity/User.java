@@ -28,15 +28,20 @@ public class User {
     private String fullname;
 
     @Convert(converter = UserStatus.Converter.class)
+    @Column(name = "status_id")
     private UserStatus statusId;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "created_by")
     private Integer createdBy;
 
+    @Column(name = "modified_by")
     private Integer modifiedBy;
 }
