@@ -15,7 +15,7 @@ import com.hieuubuntu.identityservice.dto.response.userprofile.UserProfileRespon
 
 @FeignClient(name = "user-profile-service", url = "${base-url.user-profile}", configuration = ClientConfiguration.class)
 public interface UserProfileClient {
-    @PostMapping(value = "/user-profile", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internal/users", produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<DefaultResponse<UserProfileResponse>> createProfile(@RequestBody CreateUserProfileRequest request);
 
     @GetMapping(value = "/user-profile", produces = MediaType.APPLICATION_JSON_VALUE)
