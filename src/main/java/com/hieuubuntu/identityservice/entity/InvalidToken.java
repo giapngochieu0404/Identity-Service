@@ -4,8 +4,6 @@ import java.util.Date;
 
 import jakarta.persistence.*;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.*;
 
 @Getter
@@ -21,6 +19,6 @@ public class InvalidToken {
 
     private String token;
 
-    @JsonProperty("expired_at")
+    @Column(name = "expired_at")
     private Date expiredAt; // Dùng cho job revoke token khi token hết hạn
 }
